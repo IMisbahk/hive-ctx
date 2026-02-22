@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "hive_ctx"
+name = "hive_ctx_core"
 crate-type = ["cdylib"]
 
 [package.metadata.napi]
-name = "hive_ctx"
+name = "hive_ctx_core"
 
 [dependencies]
 blake3 = "1"

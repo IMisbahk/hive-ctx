@@ -5,9 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm -w @hive/ctx-bindings run build",
-    "build:native": "npm -w @hive/ctx-bindings run build:native",
-    "clean": "npm -w @hive/ctx-bindings run clean"
+    "build": "npm -w @imisbahk/hive-ctx run build",
+    "build:native": "npm -w @imisbahk/hive-ctx run build:native",
+    "clean": "npm -w @imisbahk/hive-ctx run clean"
   }
 }
-

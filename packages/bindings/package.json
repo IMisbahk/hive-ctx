@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "build:native": "napi build --cargo-cwd ../../crates/hive-ctx-core --platform --release --output-dir .",
+    "build:native": "napi build --cargo-cwd ../../crates/hive-ctx-core --platform --release .",
     "clean": "rm -rf dist *.node"
   },
   "devDependencies": {

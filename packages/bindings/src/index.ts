@@ -5,14 +5,14 @@ type NativeModule = {
   HiveCtxEngine: new (storagePath: string, budgetTokens?: number) => {
     storagePath: string;
     budgetTokens?: number;
-    classify_message(message: string): ClassifierResultDto;
-    pipeline_build(
+    classifyMessage(message: string): ClassifierResultDto;
+    pipelineBuild(
       message: string,
       user_profile: Record<string, string>,
       token_budget?: number | null,
     ): PipelineResultDto;
-    graph_add_node(text: string, category?: string | null): Array<{ id: number }>;
-    memory_store(text: string): number;
+    graphAddNode(text: string, category?: string | null): Array<{ id: number }>;
+    memoryStore(text: string): number;
   };
 };
 
@@ -30,14 +30,24 @@ function loadNative(): NativeModule {
     return require(directPath) as NativeModule;
   }
 
-  const candidates = fs
+  const namedCandidates = fs
     .readdirSync(addonDir)
     .filter((f) => f.startsWith("hive_ctx.") && f.endsWith(".node"))
     .sort();
 
-  if (candidates.length > 0) {
+  if (namedCandidates.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(path.join(addonDir, candidates[0])) as NativeModule;
+    return require(path.join(addonDir, namedCandidates[0])) as NativeModule;
+  }
+
+  const anyCandidate = fs
+    .readdirSync(addonDir)
+    .filter((f) => f.endsWith(".node"))
+    .sort();
+
+  if (anyCandidate.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require(path.join(addonDir, anyCandidate[0])) as NativeModule;
   }
 
   throw new Error(
@@ -48,25 +58,25 @@ function loadNative(): NativeModule {
 const native = loadNative();
 
 export type ClassifierResultDto = {
-  temporal_weight: number;
-  personal_weight: number;
-  technical_weight: number;
-  emotional_weight: number;
-  message_type: string;
-  session_state: string;
+  temporalWeight: number;
+  personalWeight: number;
+  technicalWeight: number;
+  emotionalWeight: number;
+  messageType: string;
+  sessionState: string;
 };
 
 export type PipelineLayersDto = {
   episodes: number;
-  graph_nodes: number;
-  fingerprint_entries: number;
-  fingerprint_mode: string;
-  included_layers: string[];
+  graphNodes: number;
+  fingerprintEntries: number;
+  fingerprintMode: string;
+  includedLayers: string[];
 };
 
 export type PipelineResultDto = {
-  system_prompt: string;
-  token_count: number;
+  systemPrompt: string;
+  tokenCount: number;
   layers: PipelineLayersDto;
 };
 
@@ -119,17 +129,17 @@ export class HiveCtx {
   }
 
   public async build(message: string): Promise<ContextResult> {
-    const classified = this.inner.classify_message(message);
-    const pipeline = this.inner.pipeline_build(
+    const classified = this.inner.classifyMessage(message);
+    const pipeline = this.inner.pipelineBuild(
       message,
       this.profile,
       this.budgetTokens ?? null,
     );
     const budgetLimit = this.budgetTokens ?? DEFAULT_TOKEN_BUDGET;
-    const pluginBudget = Math.max(0, budgetLimit - pipeline.token_count);
+    const pluginBudget = Math.max(0, budgetLimit - pipeline.tokenCount);
     const pluginContext = await this.runPlugins(message, classified, pluginBudget);
 
-    let prompt = pipeline.system_prompt;
+    let prompt = pipeline.systemPrompt;
     if (pluginContext.contributions.length > 0) {
       prompt +=
         "\n\n" +
@@ -140,9 +150,9 @@ export class HiveCtx {
 
     return {
       systemPrompt: prompt,
-      tokenCount: pipeline.token_count + pluginContext.tokensUsed,
-      fingerprintMode: pipeline.layers.fingerprint_mode,
-      layers: pipeline.layers.included_layers,
+      tokenCount: pipeline.tokenCount + pluginContext.tokensUsed,
+      fingerprintMode: pipeline.layers.fingerprintMode,
+      layers: pipeline.layers.includedLayers,
       pluginContributions: pluginContext.contributions,
     };
   }
@@ -152,7 +162,7 @@ export class HiveCtx {
     if (sanitized.length === 0) {
       return;
     }
-    this.inner.graph_add_node(sanitized);
+    this.inner.graphAddNode(sanitized);
   }
 
   public async episode(message: string, response: string): Promise<void> {
@@ -162,7 +172,7 @@ export class HiveCtx {
       return;
     }
     const payload = [trimmedMessage, trimmedResponse].filter(Boolean).join(" || ");
-    this.inner.memory_store(payload);
+    this.inner.memoryStore(payload);
   }
 
   public use(plugin: HiveCtxPlugin): void {

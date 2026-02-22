@@ -15,3 +15,7 @@ pnpm-debug.log*
 !.rocket/config.json
 .rocket/index.db
 .rocket/cache/
+
+
+data/
+*.sqlite
