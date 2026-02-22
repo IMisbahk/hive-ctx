@@ -1,6 +1,6 @@
 {
   "name": "hive-ctx",
-  "private": true,
+  "private": false,
   "workspaces": [
     "packages/*"
   ],
