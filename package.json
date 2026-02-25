@@ -1,5 +1,5 @@
 {
-  "name": "hive-ctx",
+  "name": "@imisbahk/hive-ctx",
   "private": false,
   "workspaces": [
     "packages/*"
